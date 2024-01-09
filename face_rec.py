@@ -8,7 +8,7 @@ from sklearn.metrics import pairwise
 #time
 import time 
 from datetime import datetime
-
+import pickle
 import os 
 
 # Connect to redis client 
@@ -38,6 +38,9 @@ def retrieve_data(name):
 
 # Configure face analysis
 faceapp = FaceAnalysis(name='buffalo_sc', root='insightface_model', providers=['CPUExecutionProvider'])
+with open('faceapp_instance.pkl', 'wb') as file:
+    pickle.dump(faceapp, file)
+
 faceapp.prepare(ctx_id = 0, det_size=(640,640), det_thresh=0.5)
 
 # ML Search Algorithm
@@ -106,6 +109,9 @@ class RealTimepred:
     def face_prediction(self, test_image, dataframe, feature_column, 
                             name_role=['Name', 'Role'],thresh=0.5):
         
+        with open('faceapp_instance.pkl', 'rb') as file:
+            loaded_faceapp = pickle.load(file)
+
         # Step-0: find the time 
         current_time = str(datetime.now())
         # step 1: take the image and apply to insight face
@@ -146,6 +152,9 @@ class RegistrationForm:
         self.sample = 0
 
     def get_embedding(self, frame):
+            with open('faceapp_instance.pkl', 'rb') as file:
+                loaded_faceapp = pickle.load(file)
+
         #get result from insightface model 
             results = faceapp.get(frame, max_num=1)
             embeddings = None
